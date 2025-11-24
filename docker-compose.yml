@@ -2,17 +2,18 @@ version: "3.8"
 
 services:
   mysql:
-    user: "${UID}:${GID}" 
     image: mysql:5.7
     container_name: mysql
+    restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: devops
       MYSQL_USER: admin
       MYSQL_PASSWORD: admin
+    # CRITICAL FIX: Use named volume instead of host bind mount
     volumes:
-      - ./mysql-data:/var/lib/mysql
-      - ./message.sql:/docker-entrypoint-initdb.d/message.sql  
+      - mysql-data:/var/lib/mysql
+      - ./message.sql:/docker-entrypoint-initdb.d/message.sql:ro   # init script is read-only
     networks:
       - twotier
     healthcheck:
@@ -21,10 +22,13 @@ services:
       timeout: 5s
       retries: 5
       start_period: 60s
+    # Optional: pin MySQL to run as official mysql user (default anyway)
+    # user: "999:999"   # not needed when using named volumes
 
   flask-app:
     image: trainwithshubham/two-tier-flask-app:latest
     container_name: flask-app
+    restart: unless-stopped
     ports:
       - "5000:5000"
     environment:
@@ -33,10 +37,10 @@ services:
       MYSQL_PASSWORD: root
       MYSQL_DB: devops
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     networks:
       - twotier
-    restart: always
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"]
       interval: 10s
@@ -44,5 +48,11 @@ services:
       retries: 5
       start_period: 30s
 
+# This is the key: use a named volume managed by Docker
+volumes:
+  mysql-data:           # Docker handles permissions automatically
+    driver: local
+
 networks:
   twotier:
+    driver: bridge
