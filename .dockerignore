@@ -1,0 +1,12 @@
+mysql-data/
+mysql-data/*
+data/
+db/
+*.log
+__pycache__/
+*.pyc
+.env
+.git
+.gitignore
+.DS_Store
+dummy.txt
