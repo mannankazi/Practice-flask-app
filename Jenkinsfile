@@ -67,7 +67,7 @@ pipeline {
          stage("Deploy") {  
 
              steps{  
-
+                 sh "mkdir -p mysql-data && chmod 777 mysql-data"
                  sh "docker compose up -d --build"  
 
              }  
