@@ -41,7 +41,7 @@ pipeline {
                 sh 'docker compose down -v --remove-orphans || true'
 
                 // Rebuild image from scratch + start fresh containers
-                sh 'docker compose up -d --build --force-recreate'
+                sh 'docker compose up -d --build --force-recreate  --renew-anon-volumes'
             }
         }
     }
