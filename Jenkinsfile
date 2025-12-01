@@ -1,80 +1,55 @@
-pipeline {  
+pipeline {
+    agent any
 
-    agent any 
+    stages {
+        stage('Code Clone') {
+            steps {
+                git url: 'https://github.com/mannankazi/Practice-flask-app.git', branch: 'master'
+            }
+        }
 
-    stages{  
+        stage('Build Image (no cache)') {
+            steps {
+                // Force fresh build every time – no Docker layer cache at all
+                sh 'docker build --no-cache -t my-app .'
+            }
+        }
 
-         stage("code"){  
+        stage('Test') {
+            steps {
+                echo 'Testing phase – add real tests later'
+            }
+        }
 
-             steps {  
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(
+                    credentialsId: 'DockerHubCredentials',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                    sh 'docker tag my-app $DOCKER_USER/my-app:latest'
+                    sh 'docker push $DOCKER_USER/my-app:latest'
+                }
+            }
+        }
 
-                 git url: "https://github.com/mannankazi/Practice-flask-app.git" , branch: "master"  
+        stage('Deploy – Fresh Everything') {
+            steps {
+                // Stop and remove everything (containers, networks, volumes)
+                sh 'docker compose down -v --remove-orphans || true'
 
-             }  
+                // Rebuild image from scratch + start fresh containers
+                sh 'docker compose up -d --build --force-recreate --no-deps my-app'
+            }
+        }
+    }
 
-         } 
-
-         stage("build") {  
-
-             steps{  
-
-                 sh "docker build -t my-app . "  
-
-             }  
-
-         }  
-
-         stage("test") {  
-
-             steps{  
-
-                 echo "test krne wala test code likh dega"  
-
-             }  
-
-         }  
-
-         stage("Push to dockerHub"){ 
-
-             steps{ 
-
-                 withCredentials([usernamePassword( 
-
-                     credentialsId:"DockerHubCredentials", 
-
-                     passwordVariable: "DockerHubpassssworddd", 
-
-                     usernameVariable: "DockerHubUserNameeee" 
-
-                     )]){ 
-
-                     sh "docker login -u ${env.DockerHubUserNameeee} -p ${env.DockerHubpassssworddd}" 
-
-                     sh "docker image tag my-app ${env.DockerHubUserNameeee}/my-app:latest" 
-
-                     sh "docker push ${env.DockerHubUserNameeee}/my-app:latest " 
-
-                        } 
-
-                  
-
-             } 
-
-              
-
-         } 
-
-         stage("Deploy") {  
-
-             steps{  
-                 sh "docker compose down -v --remove-orphans || true"
-                 sh "docker compose build --no-cache my-app"
-                 sh "docker compose up -d --build --no-cache my-app "  
-
-             }  
-
-         }    
-
-     }          
-
-}  
+    post {
+        always {
+            // Optional: clean workspace so next run is 100% clean
+            cleanWs()
+        }
+    }
+}
