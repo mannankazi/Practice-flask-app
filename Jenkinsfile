@@ -67,8 +67,9 @@ pipeline {
          stage("Deploy") {  
 
              steps{  
-                 sh "docker compose down -v"
-                 sh "docker compose up -d --build"  
+                 sh "docker compose down -v --remove-orphans || true"
+                 sh "docker compose build --no-cache my-app"
+                 sh "docker compose up -d --build --no-cache my-app "  
 
              }  
 
