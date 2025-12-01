@@ -11,7 +11,7 @@ pipeline {
         stage('Build Image (no cache)') {
             steps {
                 // Force fresh build every time – no Docker layer cache at all
-                sh 'docker build --no-cache -t my-app .'
+                sh 'docker build --no-cache --pull -t my-app .'
             }
         }
 
