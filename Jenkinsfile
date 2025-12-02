@@ -51,14 +51,7 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 sh '''
-                sudo mkdir -p ${APP_DIR}
-                sudo chown -R jenkins:jenkins ${APP_DIR}
-                
-                # Copy application code to production directory
-                rsync -av --delete . ${APP_DIR}/
-
-                cd ${APP_DIR}
-
+               
                 # Pull latest image and recreate services
                 docker compose pull
                 docker compose up -d --build --force-recreate --remove-orphans
