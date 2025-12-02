@@ -37,9 +37,6 @@ pipeline {
 
         stage('Deploy – Fresh Everything') {
             steps {
-                // Stop and remove everything (containers, networks, volumes)
-                sh 'docker compose down -v --remove-orphans || true'
-
                 // Rebuild image from scratch + start fresh containers
                 sh 'docker compose up -d --build --force-recreate  --renew-anon-volumes'
             }
