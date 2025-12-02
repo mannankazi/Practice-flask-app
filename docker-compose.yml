@@ -28,8 +28,8 @@ services:
     # user: "999:999"   # not needed when using named volumes
 
   flask-app:
-    image: trainwithshubham/two-tier-flask-app:latest
-    container_name: flask-app
+    image: mannankazi/my-app-repo:v1
+    container_name: my-app
     restart: unless-stopped
     ports:
       - "5000:5000"
