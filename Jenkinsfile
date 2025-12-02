@@ -45,11 +45,4 @@ pipeline {
             }
         }
     }
-
-    post {
-        always {
-            // Optional: clean workspace so next run is 100% clean
-            cleanWs()
-        }
-    }
 }
