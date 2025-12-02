@@ -12,17 +12,16 @@ services:
       MYSQL_PASSWORD: admin
     # CRITICAL FIX: Use named volume instead of host bind mount
     volumes:
-      - ./mysql-data:/var/lib/mysql
+      - mysql-data:/var/lib/mysql
       - ./message.sql:/docker-entrypoint-initdb.d/message.sql:ro   # init script is read-only
-      - ${WORKSPACE}/mysql-data:/var/lib/mysql
     user: "0:0"
     networks:
       - twotier
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
-      interval: 20s
-      timeout: 10s
-      retries: 10
+      interval: 10s
+      timeout: 5s
+      retries: 5
       start_period: 60s
     # Optional: pin MySQL to run as official mysql user (default anyway)
     # user: "999:999"   # not needed when using named volumes
