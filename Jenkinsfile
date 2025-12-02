@@ -51,9 +51,6 @@ pipeline {
         stage('Deploy to Production') {
             steps {
                 sh '''
-               
-                # Pull latest image and recreate services
-                docker compose pull
                 docker compose up -d --build --force-recreate --remove-orphans
                 '''
             }
