@@ -1,17 +1,8 @@
 pipeline {
     agent {label "dev"};
-
-    environment {
-        APP_DIR = "/opt/app"   // Deployment directory outside Jenkins
-    }
-
     stages {
 
-        stage('Clean Workspace') {
-            steps {
-                deleteDir()   // Safe Jenkins cleanup
-            }
-        }
+       
 
         stage('Checkout Code') {
             steps {
