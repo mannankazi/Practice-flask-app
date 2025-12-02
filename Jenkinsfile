@@ -2,12 +2,6 @@ pipeline {
     agent any
     
     stages {
-        stage ("Cleanup Workspace") {
-            steps {
-                deleteDir()
-            }
-            
-        }
         
         stage('Code Clone') {
             steps {
@@ -45,7 +39,7 @@ pipeline {
         stage('Deploy – Fresh Everything') {
             steps {
                 // Rebuild image from scratch + start fresh containers
-                sh 'docker compose up -d --build --force-recreate  --renew-anon-volumes'
+                sh 'docker compose up -d --build --force-recreate '
             }
         }
     }
