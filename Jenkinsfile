@@ -1,7 +1,14 @@
 pipeline {
     agent any
-
+    
     stages {
+        stage {
+            steps {
+                deleteDir()
+            }
+            
+        }
+        
         stage('Code Clone') {
             steps {
                 git url: 'https://github.com/mannankazi/Practice-flask-app.git', branch: 'master'
