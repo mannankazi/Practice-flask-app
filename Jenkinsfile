@@ -1,45 +1,68 @@
 pipeline {
     agent any
-    
+
+    environment {
+        APP_DIR = "/opt/app"   // Deployment directory outside Jenkins
+    }
+
     stages {
-        
-        stage('Code Clone') {
+
+        stage('Clean Workspace') {
+            steps {
+                deleteDir()   // Safe Jenkins cleanup
+            }
+        }
+
+        stage('Checkout Code') {
             steps {
                 git url: 'https://github.com/mannankazi/Practice-flask-app.git', branch: 'master'
             }
         }
 
-        stage('Build Image (no cache)') {
+        stage('Build Docker Image (no cache)') {
             steps {
-                // Force fresh build every time – no Docker layer cache at all
-                sh 'docker build --no-cache --pull -t my-app .'
+                sh 'docker build --no-cache -t my-app:latest .'
             }
         }
 
-        stage('Test') {
+        stage('Run Tests') {
             steps {
-                echo 'Testing phase – add real tests later'
+                echo "Running tests..."
+                // insert test steps when ready
             }
         }
 
-        stage('Push to DockerHub') {
+        stage('Push Image to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'DockerHubCredentials',
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
-                    sh 'docker tag my-app $DOCKER_USER/my-app:V1'
-                    sh 'docker push $DOCKER_USER/my-app:V1'
+                    sh '''
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    docker tag my-app:latest $DOCKER_USER/my-app:latest
+                    docker push $DOCKER_USER/my-app:latest
+                    '''
                 }
             }
         }
 
-        stage('Deploy – Fresh Everything') {
+        stage('Deploy to Production') {
             steps {
-                // Rebuild image from scratch + start fresh containers
-                sh 'docker compose up -d --build --force-recreate '
+                sh '''
+                sudo mkdir -p ${APP_DIR}
+                sudo chown -R jenkins:jenkins ${APP_DIR}
+                
+                # Copy application code to production directory
+                rsync -av --delete . ${APP_DIR}/
+
+                cd ${APP_DIR}
+
+                # Pull latest image and recreate services
+                docker compose pull
+                docker compose up -d --build --force-recreate --remove-orphans
+                '''
             }
         }
     }
