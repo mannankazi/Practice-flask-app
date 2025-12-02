@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent {lable "dev"};
 
     environment {
         APP_DIR = "/opt/app"   // Deployment directory outside Jenkins
